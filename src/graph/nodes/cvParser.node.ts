@@ -1,7 +1,6 @@
 import type { AgentStateType } from "../state";
 import { extractStructuredCV } from "../../services/cv.service";
 import { mockParsedCV } from "../../mock/mockData";
-mockParsedCV;
 
 export async function cvParserNode(
   state: AgentStateType,

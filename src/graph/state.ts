@@ -6,7 +6,7 @@ import type {
   JobApplication,
   RunStatus,
   UserPreferences
-} from "../types/index.js"
+} from "../types/index"
 
 export const AgentState = Annotation.Root({
   // ── Input
@@ -30,7 +30,10 @@ export const AgentState = Annotation.Root({
   error: Annotation<string | null>,
 
   // Mock
-  mock: Annotation<boolean>
+  mock: Annotation<boolean>,
+
+  // Data being passed after interrupt
+  data_after_interruption : Annotation<string[]>
 })
 
 export type AgentStateType = typeof AgentState.State

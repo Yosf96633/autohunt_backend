@@ -17,7 +17,7 @@ export async function humanCheckNode(state: AgentStateType): Promise<Partial<Age
   })
 
   // when user resumes, decision contains approved job ids
-  const approvedIds: string[] = decision.approvedIds
+  const approvedIds: string[] = decision
 
   const approvedJobs = state.filteredJobs.filter(job =>
     approvedIds.includes(job.id)

@@ -3,7 +3,7 @@ import type { ScoredJob } from "../validators/job.validator"
 import type { ParsedCV } from "../types/agent.types"
 
 const llm = new ChatOpenAI({
-  model: "gpt-4o-mini",
+  model: 'gpt-4o-mini',
   temperature: 0.7, // slight creativity for cover letters
   apiKey: process.env.OPENAI_API_KEY
 })

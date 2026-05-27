@@ -3,9 +3,10 @@ import type { ParsedCV } from "../types/index"
 import { ParsedCVSchema } from "../validators/cv.validator"
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs"
 
+
 const llm = new ChatOpenAI({
-  model: "gpt-4o-mini",
-  temperature: 0,
+  model: 'gpt-4o-mini',
+  temperature: 0.7, // slight creativity for cover letters
   apiKey: process.env.OPENAI_API_KEY
 }).withStructuredOutput(ParsedCVSchema)
 
