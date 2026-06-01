@@ -7,7 +7,7 @@ import type { ParsedCV } from "../types/agent.types"
 
 
 const llm = new ChatOpenAI({
- model: 'gpt-4o-mini',
+ model: 'gpt-4.1-nano',
   temperature: 0.7, // slight creativity for cover letters
   apiKey: process.env.OPENAI_API_KEY
 }).withStructuredOutput(ScoredJobSchema)

@@ -23,6 +23,7 @@ export const EducationSchema = z.object({
 export const ParsedCVSchema = z.object({
   name: z.string(),
   email: z.string(),
+  address : z.string().nullable(),
   phone: z.string().nullable(),
   skills: z.array(z.string()),
   stack: z.array(z.string()),

@@ -4,6 +4,15 @@ const EXCLUDED_KEYWORDS = [
   "marketing", "sales", "designer", "accountant",
   "hr ", "recruiter", "copywriter", "seo", "social media"
 ]
+const DAYS_THRESHOLD = 5;
+
+function isRecent(postedAt: string | null): boolean {
+  if (!postedAt) return false
+  const posted = new Date(postedAt)
+  const now = new Date()
+  const diffDays = (now.getTime() - posted.getTime()) / (1000 * 60 * 60 * 24)
+  return diffDays <= DAYS_THRESHOLD
+}
 
 async function fetchJobsByTag(tag: string): Promise<RawJob[]> {
   const response = await fetch(`https://remoteok.com/api?tags=${tag}`, {
@@ -13,7 +22,7 @@ async function fetchJobsByTag(tag: string): Promise<RawJob[]> {
   if (!response.ok) throw new Error(`RemoteOK API failed: ${response.status}`)
 
   const data = await response.json()
-  const jobs = data.slice(1) // remove legal notice
+  const jobs = data.slice(1)
 
   return jobs.map((job: any) => ({
     id: String(job.id ?? ""),
@@ -23,17 +32,15 @@ async function fetchJobsByTag(tag: string): Promise<RawJob[]> {
     description: job.description ?? "",
     applyUrl: job.apply_url ?? job.url ?? "",
     source: "remoteok",
-    postedAt: job.date ?? ""
+    postedAt: job.date ?? null
   }))
 }
 
 export async function scrapeJobs(roles: string[]): Promise<RawJob[]> {
-  // fetch all tags in parallel
   const results = await Promise.all(
     roles.map(role => fetchJobsByTag(role.toLowerCase()))
   )
 
-  // flatten all results
   const allJobs = results.flat()
 
   // deduplicate by id
@@ -45,10 +52,15 @@ export async function scrapeJobs(roles: string[]): Promise<RawJob[]> {
   })
 
   // exclude irrelevant titles
-  const filtered = uniqueJobs.filter(job => {
+  const roleFiltered = uniqueJobs.filter(job => {
     const title = job.title.toLowerCase()
     return !EXCLUDED_KEYWORDS.some(kw => title.includes(kw))
   })
 
-  return RawJobsSchema.parse(filtered)
+  // filter by date
+  const recentJobs = roleFiltered.filter(job => isRecent(job.postedAt))
+
+  console.log(`📊 Total: ${allJobs.length} → Deduplicated: ${uniqueJobs.length} → Role filtered: ${roleFiltered.length} → Recent (${DAYS_THRESHOLD} days): ${recentJobs.length}`)
+
+  return RawJobsSchema.parse(recentJobs)
 }

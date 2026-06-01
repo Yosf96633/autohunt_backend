@@ -1,6 +1,7 @@
 export interface ParsedCV {
   name: string;
   email: string;
+  address : string | null;
   phone: string | null;
   skills: string[];
   stack: string[]; // specific technologies e.g. Next.js, FastAPI

@@ -5,6 +5,7 @@ export const mockParsedCV: ParsedCV = {
   name: "Muhammad Yousaf",
   email: "yousaf.dev18@gmail.com",
   phone: "+92 335 8485732",
+  address : "Lahore , Pakistan",
   skills: ["JavaScript", "TypeScript", "React.js", "Next.js", "Node.js", "Python", "LangChain", "LangGraph"],
   stack: ["React", "Next.js", "Node.js", "Python"],
   experience: [],

@@ -121,8 +121,10 @@ export async function runAgent(req: Request, res: Response) {
         configurable: { thread_id: runId },
       },
     );
-    console.log("Raw jobs : ", temp.rawJobs);
-    console.log("Lenght of the raw jobs : ", temp.rawJobs.length);
+    res.json({
+      success : true ,
+      data : temp,
+    })
   } catch (error) {
     console.error("Agent error:", error);
     sendEvent(res, { type: "error", message: "Agent failed" });
