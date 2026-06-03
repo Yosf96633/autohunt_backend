@@ -11,6 +11,7 @@ import type {
 export const AgentState = Annotation.Root({
   // ── Input
   cvBuffer: Annotation<Buffer>,
+  cvName : Annotation<string>,
   preferences: Annotation<UserPreferences>,
 
   // ── Filled progressively by each node

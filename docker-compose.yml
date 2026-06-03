@@ -9,7 +9,21 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - autohunt_pgdata:/var/lib/postgresql  # ← remove /data for pg18
+      - autohunt_pgdata:/var/lib/postgresql
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: autohunt_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - autohunt_pgadmin_data:/var/lib/pgadmin
 
 volumes:
   autohunt_pgdata:
+  autohunt_pgadmin_data:

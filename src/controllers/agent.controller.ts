@@ -4,6 +4,7 @@ import { Command } from "@langchain/langgraph";
 
 // ── SSE helper
 function sendEvent(res: Response, data: object) {
+  console.log("Server sent event : ", data);
   res.write(`data: ${JSON.stringify(data)}\n\n`);
 }
 
@@ -25,84 +26,16 @@ export async function runAgent(req: Request, res: Response) {
     const preferences = JSON.parse(req.body.preferences);
     const runId = req.body.thread_id as string;
     const mock = req.body.mock === "true" || req.body.mock === true;
+    console.log("Preferences : ", preferences);
+    console.log("Thread id : ", runId);
+    console.log("Mock : ", mock);
 
-    // setupSSE(res);
+    setupSSE(res);
 
-    // const stream = graph.streamEvents(
-    //   {
-    //     cvBuffer: req.file.buffer,
-    //     preferences,
-    //     parsedCV: null,
-    //     rawJobs: [],
-    //     scoredJobs: [],
-    //     mock,
-    //     filteredJobs: [],
-    //     coverLetters: {},
-    //     applications: [],
-    //     digest: "",
-    //     status: "parsing_cv",
-    //     runId,
-    //     error: null,
-    //   },
-    //   {
-    //     version: "v2",
-    //     configurable: { thread_id: runId },
-    //   },
-    // );
-
-    // for await (const event of stream) {
-    //   if (event.event === "on_chain_start" && event.name !== "LangGraph") {
-    //     sendEvent(res, { type: "node_start", node: event.name });
-    //   }
-
-    //   if (event.event === "on_chain_end" && event.name !== "LangGraph") {
-    //     sendEvent(res, { type: "node_end", node: event.name });
-    //   }
-
-    //   if (event.event === "on_chat_model_stream") {
-    //     const token = event.data?.chunk?.content;
-    //     if (token) {
-    //       sendEvent(res, { type: "token", content: token });
-    //     }
-    //   }
-
-    //   if (event.event === "on_chain_error") {
-    //     sendEvent(res, {
-    //       type: "error",
-    //       message: String(event.data?.error),
-    //     });
-    //   }
-    // }
-
-    // // ── after stream ends check for interrupt
-    // const graphState = await graph.getState({
-    //   configurable: { thread_id: runId },
-    // });
-
-    // const activeTasks = graphState.tasks ?? [];
-    // const interruptedTask = activeTasks.find(
-    //   (task) => task.interrupts && task.interrupts.length > 0,
-    // );
-
-    // if (interruptedTask) {
-    //   const interruptPayload = interruptedTask.interrupts[0]?.value;
-
-    //   sendEvent(res, {
-    //     type: "interrupted",
-    //     node: interruptedTask.name,
-    //     runId,
-    //     status: "awaiting_review",
-    //     jobs: interruptPayload?.jobs ?? [],
-    //   });
-    // } else {
-    //   sendEvent(res, { type: "done" });
-    // }
-
-    // res.end();
-
-    const temp = await graph.invoke(
+    const stream = graph.streamEvents(
       {
         cvBuffer: req.file.buffer,
+        cvName: req.file.originalname,
         preferences,
         parsedCV: null,
         rawJobs: [],
@@ -116,15 +49,54 @@ export async function runAgent(req: Request, res: Response) {
         runId,
         error: null,
       },
-
       {
+        version: "v2",
         configurable: { thread_id: runId },
       },
     );
-    res.json({
-      success : true ,
-      data : temp,
-    })
+
+    for await (const event of stream) {
+      if (event.event === "on_chain_start" && event.name !== "LangGraph") {
+        sendEvent(res, { type: "node_start", node: event.name });
+      }
+
+      if (event.event === "on_chain_end" && event.name !== "LangGraph") {
+        sendEvent(res, { type: "node_end", node: event.name });
+      }
+
+      if (event.event === "on_chain_error") {
+        sendEvent(res, {
+          type: "error",
+          message: String(event.data?.error),
+        });
+      }
+    }
+
+    // ── after stream ends check for interrupt
+    const graphState = await graph.getState({
+      configurable: { thread_id: runId },
+    });
+
+    const activeTasks = graphState.tasks ?? [];
+    const interruptedTask = activeTasks.find(
+      (task) => task.interrupts && task.interrupts.length > 0,
+    );
+
+    if (interruptedTask) {
+      const interruptPayload = interruptedTask.interrupts[0]?.value;
+
+      sendEvent(res, {
+        type: "interrupted",
+        node: interruptedTask.name,
+        runId,
+        status: "awaiting_review",
+        jobs: interruptPayload?.jobs ?? [],
+      });
+    } else {
+      sendEvent(res, { type: "done" });
+    }
+
+    res.end();
   } catch (error) {
     console.error("Agent error:", error);
     sendEvent(res, { type: "error", message: "Agent failed" });
