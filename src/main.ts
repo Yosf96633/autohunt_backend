@@ -9,7 +9,7 @@ const app = express()
 const PORT = Number(process.env.PORT!)
 
 app.use(cors({
-  origin: ["http://localhost:5500", "https://autohunt-agent.vercel.app/", "http://localhost:3000"],
+  origin: ["https://autohunt-agent.vercel.app", "http://localhost:3000"],
   credentials: true,
 }))
 
